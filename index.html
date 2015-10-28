@@ -55,9 +55,9 @@
 		$scope.$emit('UNQUERY'); //using $emit to signal when/when not to show the search results view
 		$scope.searchUrl = 'http://api.nal.usda.gov/ndb/search/';
 
-		$scope.testUrl = 'http://api.nal.usda.gov/ndb/reports/?ndbno=14400&type=f&format=json&api_key=xXWRPsLg1ndI942IC23yN8qWNmNWBRlnEer21RjD';
+		$scope.testUrl = 'http://api.nal.usda.gov/ndb/reports/?ndbno=14400&type=f&format=json&api_key=DEMO_KEY';
 
-		$scope.api_key = '&api_key=xXWRPsLg1ndI942IC23yN8qWNmNWBRlnEer21RjD';
+		$scope.api_key = '&api_key=DEMO_KEY';
 		$scope.fmtJson = '?format=json';
 		$scope.q = '&q=';
 		$scope.callback = '&callback=JSON_CALLBACK';
@@ -87,7 +87,7 @@
 			$scope.querySelection = $scope.itemSelection;
 			$scope.rtype = '&type=b'
 			$scope.fmtJson = '&format=json';
-			$scope.api_key = '&api_key=xXWRPsLg1ndI942IC23yN8qWNmNWBRlnEer21RjD';
+			$scope.api_key = '&api_key=DEMO_KEY';
 			$scope.callback = '&callback=JSON_CALLBACK';
 			//temporary comment out $scope.baseReport = {};
 			$scope.resultUrl= $scope.resultBaseUrl + $scope.ndb + $scope.querySelection + $scope.rtype
