@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="sugarApp">
+  <head>
+	<meta charset="UTF-8" />
+	<title>Sugar App</title>
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.css"/>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.min.js"></script> 
+  </head>
+  <body ng-controller="loadingController">
+	<div class="alert alert-info" ng-show="loading">Loading</div> <!-- show/hide based on the truthy or falsey value of $scope.loading-->
+	<div ng-controller="sugarController">
+		<form name="searchForm"  ng-submit="doSearch()">
+			<input type="text" ng-model="queryInput" placeholder="Search a food or food product">
+			<input type="submit" value="Search">
+		</form>
+		<ul>
+			<div ng-show="query">
+			Results for '{{baseList.q}}'
+			<li ng-repeat="item in product">
+
+				<!-- the problem : ndbno parameter is not being passed, and as a result the request has an undefined value
+
+				tried: baseList.ndbno, item.ndbno, $scope.baseList.ndbno, ng-value, bracket syntax [], other things i'm forgetting-->
+				 	<a ng-href ng-model="itemSelection" ng-value="{{item.ndbno}}" ng-click="showResults()">{{item.name}}, {{item.ndbno}}</a>
+				 </div>
+			</li>
+		</div>
+	  </ul>
+
+	  <div ng-show="result"> <!-- show/hide based on the truthy or falsey value of $scope.result-->
+	  	The amount of sugar in {{baseReport.product.serving}} of {{baseReport.product.name}} is {{baseReport.amount}} or circus peanuts or teaspoons of granulated sugar.
+	  </div>
+
+	  <footer>
+	  	<small>Source: National Nutrient Database for Standard Reference - Release {{baseReport.sr}} {{baseList.sr}}</small>
+	  </footer>
+	</div>
+
+
+	<script>
+/* TODO
+	high
+	clean up code: remove redundancies
+	figure out how to pass the ndbno result to $scope.querySelection 
+	
+	low
+	replace deprecated .success with .then
+	reformat get requests into factory
+	investigate why baseReport.sr is no longer displaying
+
+	*/
+	angular.module('sugarApp',[]).controller('sugarController',['$scope','$http',function($scope,$http,$q){
+		$scope.doSearch = function(){ 
+		$scope.$emit('LOAD'); //using $emit to signal when/vhen not to show the loading indicator 
+		$scope.$emit('UNQUERY'); //using $emit to signal when/when not to show the search results view
+		$scope.searchUrl = 'http://api.nal.usda.gov/ndb/search/';
+
+		$scope.testUrl = 'http://api.nal.usda.gov/ndb/reports/?ndbno=14400&type=f&format=json&api_key=xXWRPsLg1ndI942IC23yN8qWNmNWBRlnEer21RjD';
+
+		$scope.api_key = '&api_key=xXWRPsLg1ndI942IC23yN8qWNmNWBRlnEer21RjD';
+		$scope.fmtJson = '?format=json';
+		$scope.q = '&q=';
+		$scope.callback = '&callback=JSON_CALLBACK';
+
+		$scope.query = $scope.queryInput;
+
+		$scope.fullUrl= $scope.searchUrl + $scope.fmtJson + $scope.q + $scope.query + $scope.api_key + $scope.callback;
+		$scope.placeholder = "Search for a food or food product";
+		//temporary comment out $scope.baseReport = {}; //initialize a blank baseReport array
+
+		$http.get($scope.fullUrl)
+		.success(function(data){
+			$scope.baseReport=data.report;
+			$scope.baseList=data.list;
+			$scope.product=data.list.item;
+			$scope.$emit('UNLOAD');
+			$scope.$emit('QUERY');
+			$scope.$emit('NORESULT')
+		})}
+		
+			$scope.showResults = function(){
+			$scope.$emit('UNQUERY');
+			$scope.$emit('LOAD');
+			$scope.$emit('RESULT');
+			$scope.resultBaseUrl = 'http://api.nal.usda.gov/ndb/reports/';
+			$scope.ndb = '?ndbno=';
+			$scope.querySelection = $scope.itemSelection;
+			$scope.rtype = '&type=b'
+			$scope.fmtJson = '&format=json';
+			$scope.api_key = '&api_key=xXWRPsLg1ndI942IC23yN8qWNmNWBRlnEer21RjD';
+			$scope.callback = '&callback=JSON_CALLBACK';
+			//temporary comment out $scope.baseReport = {};
+			$scope.resultUrl= $scope.resultBaseUrl + $scope.ndb + $scope.querySelection + $scope.rtype
+			+ $scope.api_key + $scope.fmtJson + $scope.callback;
+			
+			$http.post($scope.resultUrl)
+			.success(function(data){
+				$scope.basereport=data.report;
+				$scope.$emit('UNLOAD');
+			})
+		}
+		
+	}])
+	//setting up scope emit flags for use in showing/hiding view elements
+		//used for showing or hiding results div
+	.controller('resultController', ['$scope', function($scope){
+		$scope.$on('RESULT',function(){$scope.result=true});
+		$scope.$on('NORESULT',function(){$scope.result=false});
+	}]) //used for showing or hiding query list view div
+	.controller('queryController', ['$scope', function($scope){
+		$scope.$on('QUERY',function(){$scope.query=true});
+		$scope.$on('NOQUERY',function(){$scope.query=false});
+	}]) // used for showing or hiding the loading indicator div
+	.controller('loadingController',['$scope',function($scope){
+		$scope.$on('LOAD',function(){$scope.loading=true});
+		$scope.$on('UNLOAD',function(){$scope.loading=false});
+	}])
+	</script>
+  </body>
+</html>
